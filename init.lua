@@ -32,8 +32,6 @@ vim.g.have_nerd_font = true
 
 -- ----------------------------------------------------------------------------------
 -- [[ Setting options ]]
--- See `:help vim.opt`
--- For more options, you can see `:help option-list`
 -- Make line numbers default
 vim.opt.number = true
 vim.opt.relativenumber = true
@@ -45,7 +43,6 @@ vim.opt.mouse = 'a'
 vim.opt.showmode = false
 -- Sync clipboard between OS and Neovim.
 --  Remove this option if you want your OS clipboard to remain independent.
---  See `:help 'clipboard'`
 vim.opt.clipboard = 'unnamedplus'
 -- Enable break indent
 vim.opt.breakindent = true
@@ -59,13 +56,13 @@ vim.opt.smartcase = true
 vim.opt.signcolumn = 'yes'
 -- Decrease update time
 vim.opt.updatetime = 250
+-- Decrease mapped sequence wait time
+-- Displays which-key popup sooner
 vim.opt.timeoutlen = 300
 -- Configure how new splits should be opened
 vim.opt.splitright = true
 vim.opt.splitbelow = true
 -- Sets how neovim will display certain whitespace in the editor.
---  See `:help 'list'`
---  and `:help 'listchars'`
 vim.opt.list = true
 vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 -- Preview substitutions live, as you type!
@@ -88,8 +85,7 @@ vim.keymap.set('n', '<leader>cd', vim.diagnostic.open_float, { desc = 'Show [C]o
 vim.keymap.set('n', '<leader>cq', vim.diagnostic.setloclist, { desc = 'Open [C]ode diagnostic [Q]uickfix list' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
--- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
--- is not what someone will guess without a bit more experience.
+-- for people to discover.
 -- NOTE: This won't work in all terminal emulators/tmux/etc. Try your own mapping
 -- or just use <C-\><C-n> to exit terminal mode
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
@@ -107,14 +103,19 @@ vim.keymap.set('n', '<C-Down>', '<cmd>resize +5<CR>', { desc = 'Resize window do
 vim.keymap.set('n', '<C-Up>', '<cmd>resize -5<CR>', { desc = 'Resize window up' })
 
 -- Exit NVIM
-vim.keymap.set({ 'n', 'v' }, '<Leader>qq', '<cmd>qa<cr>', { desc = 'Quit Neovim' })
+vim.keymap.set({ 'n', 'v' }, '<Leader>qq', '<cmd>qa<cr>', { desc = '[Q]uit Neovim' })
+vim.keymap.set({ 'n', 'v' }, '<Leader>q!', '<cmd>qa!<cr>', { desc = '[Q]uit Neovim & Discard Unsaved Changes' })
+
+-- Buffers
+vim.keymap.set({ 'n' }, '<Leader>bd', '<cmd>bd<cr>', { desc = '[B]uffer [D]elete (Quit)' })
 
 -- Save with Ctrl + S
 vim.keymap.set({ 'n', 'v', 'i' }, '<C-s>', '<cmd>write<cr>', { desc = 'Save currently opened buffer' })
 
 -- LazyGit keymaps
 vim.keymap.set('n', '<Leader>gg', '<cmd>LazyGit<CR>', { desc = 'Start Lazy [G]it' })
-
+vim.keymap.set('n', '<Leader>gc', '<cmd>LazyGitConfig<CR>', { desc = ' Lazy [G]it [C]onfig' })
+vim.keymap.set('n', '<Leader>gr', '<cmd>LazyGitCurrentFile<CR>', { desc = ' Lazy [G]it Current File [R]oot Dir' })
 -- ----------------------------------------------------------------------------------
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -195,6 +196,7 @@ require('lazy').setup({
         ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
         ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
         ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
+        ['<leader>b'] = { name = '[B]uffer', _ = 'which_key_ignore' },
         ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
         ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
         ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
@@ -298,7 +300,6 @@ require('lazy').setup({
       end, { desc = '[S]earch [N]eovim files' })
     end,
   },
-
   { -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
     dependencies = {
@@ -316,31 +317,6 @@ require('lazy').setup({
       { 'folke/neodev.nvim', opts = {} },
     },
     config = function()
-      -- Brief Aside: **What is LSP?**
-      --
-      -- LSP is an acronym you've probably heard, but might not understand what it is.
-      --
-      -- LSP stands for Language Server Protocol. It's a protocol that helps editors
-      -- and language tooling communicate in a standardized fashion.
-      --
-      -- In general, you have a "server" which is some tool built to understand a particular
-      -- language (such as `gopls`, `lua_ls`, `rust_analyzer`, etc). These Language Servers
-      -- (sometimes called LSP servers, but that's kind of like ATM Machine) are standalone
-      -- processes that communicate with some "client" - in this case, Neovim!
-      --
-      -- LSP provides Neovim with features like:
-      --  - Go to definition
-      --  - Find references
-      --  - Autocompletion
-      --  - Symbol Search
-      --  - and more!
-      --
-      -- Thus, Language Servers are external tools that must be installed separately from
-      -- Neovim. This is where `mason` and related plugins come into play.
-      --
-      -- If you're wondering about lsp vs treesitter, you can check out the wonderfully
-      -- and elegantly composed help section, `:help lsp-vs-treesitter`
-
       --  This function gets run when an LSP attaches to a particular buffer.
       --    That is to say, every time a new file is opened that is associated with
       --    an lsp (for example, opening `main.rs` is associated with `rust_analyzer`) this
@@ -348,11 +324,7 @@ require('lazy').setup({
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
         callback = function(event)
-          -- NOTE: Remember that lua is a real programming language, and as such it is possible
-          -- to define small helper and utility functions so you don't have to repeat yourself
-          -- many times.
-          --
-          -- In this case, we create a function that lets us more easily define mappings specific
+          -- We create a function that lets us more easily define mappings specific
           -- for LSP related items. It sets the mode, buffer and description for us each time.
           local map = function(keys, func, desc)
             vim.keymap.set('n', keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
@@ -399,11 +371,10 @@ require('lazy').setup({
           --  For example, in C this would take you to the header
           map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
 
-          -- Rust Keybinds
-          map('<Leader>cf', '<cmd>leptosfmt %<CR>', '[C]ode [F]ormat: Leptos')
-          map('<Leader>ct', '<cmd>cargo test<CR>', '[C]argo [T]est')
-          map('<Leader>cr', '<cmd>cargo run<CR>', '[C]argo [R]un')
-          map('<Leader>cb', '<cmd>cargo build<CR>', '[C]argo [B]uild')
+          map('<Leader>cf', ':!leptosfmt %<CR>', '[C]ode [F]ormat: Leptos')
+          map('<Leader>ct', ':!cargo test<CR>', '[C]argo [T]est')
+          map('<Leader>cr', ':!cargo run<CR>', '[C]argo [R]un')
+          map('<Leader>cb', ':!cargo build<CR>', '[C]argo [B]uild')
 
           -- The following two autocommands are used to highlight references of the
           -- word under your cursor when your cursor rests there for a little while.
@@ -465,33 +436,32 @@ require('lazy').setup({
           },
         },
         rust_analyzer = {
-          settings = {
-            ['rust-analyzer'] = {
-              cargo = {
-                allFeatures = true,
-                loadOutDirsFromCheck = true,
-                runBuildScripts = true,
-              },
-              -- Add clippy lints for Rust.
-              checkOnSave = {
-                allFeatures = true,
-                command = 'clippy',
-                extraArgs = { '--no-deps' },
-              },
-              procMacro = {
-                enable = true,
-                ignored = {
-                  ['leptos_macro'] = {
-                    --"component",--
-                    'server',
-                  },
-                  ['async-trait'] = { 'async_trait' },
-                  ['napi-derive'] = { 'napi' },
-                  ['async-recursion'] = { 'async_recursion' },
-                },
-              },
-            },
-          },
+          -- settings = {
+          --   ['rust-analyzer'] = {
+          --     cargo = {
+          --       allFeatures = true,
+          --       loadOutDirsFromCheck = true,
+          --       runBuildScripts = true,
+          --     },
+          --     -- Add clippy lints for Rust.
+          --     checkOnSave = {
+          --       allFeatures = true,
+          --       command = 'clippy',
+          --       extraArgs = { '--no-deps' },
+          --     },
+          --     procMacro = {
+          --       enable = true,
+          --       ignored = {
+          --         ['leptos_macro'] = { --"component",--
+          --           'server',
+          --         },
+          --         ['async-trait'] = { 'async_trait' },
+          --         ['napi-derive'] = { 'napi' },
+          --         ['async-recursion'] = { 'async_recursion' },
+          --       },
+          --     },
+          --   },
+          -- },
         },
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -507,8 +477,6 @@ require('lazy').setup({
       --  To check the current status of installed tools and/or manually install
       --  other tools, you can run
       --    :Mason
-      --
-      --  You can press `g?` for help in this menu
       require('mason').setup()
 
       -- You can add other tools here that you want Mason to install
@@ -516,6 +484,7 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format lua code
+        'codelldb',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -547,6 +516,13 @@ require('lazy').setup({
     keys = {
       {
         '<leader>e',
+        function()
+          require('neo-tree.command').execute { toggle = true, dir = vim.lsp.buf.list_workspace_folders()[1] }
+        end,
+        desc = 'Explorer NeoTree (ROOT)',
+      },
+      {
+        '<leader>E',
         function()
           require('neo-tree.command').execute { toggle = true, dir = vim.fn.getcwd() }
         end,
@@ -605,31 +581,30 @@ require('lazy').setup({
   },
   -- Autoclose Braces
   { 'm4xshen/autoclose.nvim', event = 'InsertEnter', opts = {} },
-  -- Snippet Engine
-  {
-    'L3MON4D3/LuaSnip',
-    event = 'InsertEnter',
-    config = function()
-      -- Go to https://github.com/L3MON4D3/LuaSnip for more info on adding snippets etc.
-      require('luasnip.loaders.from_vscode').lazy_load()
-    end,
-    build = (function()
-      -- Build Step is needed for regex support in snippets
-      -- This step is not supported in many windows environments
-      -- Remove the below condition to re-enable on windows
-      if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
-        return
-      end
-      return 'make install_jsregexp'
-    end)(),
-    dependencies = { 'rafamadriz/friendly-snippets' },
-  },
   { -- Autocompletion
     'hrsh7th/nvim-cmp',
     event = 'InsertEnter',
     dependencies = {
-      -- Snippet Engine & its associated nvim-cmp source
-      'L3MON4D3/LuaSnip',
+      {
+        -- Snippet Engine & its associated nvim-cmp source
+        'L3MON4D3/LuaSnip',
+        build = (function()
+          -- Build Step is needed for regex support in snippets
+          -- This step is not supported in many windows environments
+          -- Remove the below condition to re-enable on windows
+          if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
+            return
+          end
+          return 'make install_jsregexp'
+        end)(),
+        dependencies = {
+          'rafamadriz/friendly-snippets',
+          config = function()
+            -- Go to https://github.com/L3MON4D3/LuaSnip for more info on adding snippets etc.
+            require('luasnip.loaders.from_vscode').lazy_load()
+          end,
+        },
+      },
       'saadparwaiz1/cmp_luasnip',
 
       -- Adds other completion capabilities.
@@ -637,7 +612,21 @@ require('lazy').setup({
       --  into multiple repos for maintenance purposes.
       'hrsh7th/cmp-nvim-lsp',
       'hrsh7th/cmp-path',
+      {
+        'Saecki/crates.nvim',
+        event = { 'BufRead Cargo.toml' },
+        opts = {
+          src = {
+            cmp = { enabled = true },
+          },
+        },
+      },
     },
+    ---@param opts cmp.ConfigSchema
+    opts = function(_, opts)
+      opts.sources = opts.sources or {}
+      table.insert(opts.sources, { name = 'crates' })
+    end,
     config = function()
       -- See `:help cmp`
       local cmp = require 'cmp'
@@ -654,15 +643,18 @@ require('lazy').setup({
 
         -- For an understanding of why these mappings were
         -- chosen, you will need to read `:help ins-completion`
-        --
-        -- No, but seriously. Please read `:help ins-completion`, it is really good!
         mapping = cmp.mapping.preset.insert {
           -- Select the [n]ext item
           ['<C-n>'] = cmp.mapping.select_next_item(),
           -- Select the [p]revious item
           ['<C-p>'] = cmp.mapping.select_prev_item(),
+          -- scroll the documentation window [b]ack / [f]orward
+          ['<C-b>'] = cmp.mapping.scroll_docs(-5),
+          ['<C-f>'] = cmp.mapping.scroll_docs(5),
+          -- Close the docs
+          ['<C-x>'] = cmp.mapping.close_docs(),
 
-          -- Accept ([y]es) the completion.
+          -- Accept the completion.
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
           ['<CR>'] = cmp.mapping.confirm { select = true },
@@ -672,14 +664,10 @@ require('lazy').setup({
           --  completions whenever it has completion options available.
           ['<C-Space>'] = cmp.mapping.complete {},
 
-          -- Think of <c-l> as moving to the right of your snippet expansion.
-          --  So if you have a snippet that's like:
-          --  function $name($args)
-          --    $body
-          --  end
-          --
           -- <c-l> will move you to the right of each of the expansion locations.
           -- <c-h> is similar, except moving you backwards.
+          -- For more advanced luasnip keymaps (e.g. selecting choice nodes, expansion) see:
+          -- https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
           ['<C-l>'] = cmp.mapping(function()
             if luasnip.expand_or_locally_jumpable() then
               luasnip.expand_or_jump()
@@ -774,7 +762,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'html', 'lua', 'markdown', 'vim', 'vimdoc', 'rust', 'sql' },
+      ensure_installed = { 'bash', 'c', 'html', 'lua', 'markdown', 'vim', 'vimdoc', 'rust', 'ron', 'toml', 'sql' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = { enable = true },
@@ -799,8 +787,6 @@ require('lazy').setup({
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
   -- put them in the right spots if you want.
 
-  -- NOTE: Next step on your Neovim journey: Add/Configure additional plugins for kickstart
-  --
   --  Here are some example plugins that I've included in the kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
@@ -809,9 +795,8 @@ require('lazy').setup({
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
+  --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going. For additional information, see `:help lazy.nvim-lazy.nvim-structuring-your-plugins`
   --
-  --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  --    For additional information, see `:help lazy.nvim-lazy.nvim-structuring-your-plugins`
   -- { import = 'custom.plugins' },
 }, {
   ui = {
