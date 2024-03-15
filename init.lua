@@ -502,6 +502,52 @@ require('lazy').setup({
       }
     end,
   },
+  -- Buffers into tabs
+  {
+    'akinsho/bufferline.nvim',
+    dependencies = 'nvim-tree/nvim-web-devicons',
+    opts = {
+      options = {
+        close_command = function(n)
+          require('mini.bufremove').delete(n, false)
+        end,
+        right_mouse_command = function(n)
+          require('mini.bufremove').delete(n, false)
+        end,
+        diagnostics = 'nvim_lsp',
+        always_show_bufferline = false,
+        offsets = {
+          {
+            filetype = 'neo-tree',
+            text = 'Neo-tree',
+            highlight = 'Directory',
+            text_align = 'left',
+          },
+        },
+      },
+    },
+    config = function(_, opts)
+      require('bufferline').setup(opts)
+      -- Keybinds
+      vim.keymap.set('n', '<leader>bp', '<Cmd>BufferLineTogglePin<cr>', { desc = 'Toggle pin' })
+      vim.keymap.set('n', '<leader>bP', '<Cmd>BufferLineGroupClose ungrouped<cr>', { desc = 'Delete non-pinned buffers' })
+      vim.keymap.set('n', '<leader>bo', '<Cmd>BufferLineCloseOthers<cr>', { desc = 'Delete other buffers' })
+      vim.keymap.set('n', '<leader>br', '<Cmd>BufferLineCloseRight<cr>', { desc = 'Delete buffers to the right' })
+      vim.keymap.set('n', '<leader>bl', '<Cmd>BufferLineCloseLeft<cr>', { desc = 'Delete buffers to the left' })
+      vim.keymap.set('n', '<S-h>', '<Cmd>BufferLineCyclePrev<cr>', { desc = 'Prev Buffer' })
+      vim.keymap.set('n', '<S-l>', '<Cmd>BufferLineCycleNext<cr>', { desc = 'Next Buffer' })
+      vim.keymap.set('n', '[b', '<Cmd>BufferLineCyclePrev<cr>', { desc = 'Prev Buffer' })
+      vim.keymap.set('n', ']b', '<Cmd>BufferLineCycleNext<cr>', { desc = 'Next Buffer' })
+      -- Fix bufferline when restoring a session
+      vim.api.nvim_create_autocmd('BufAdd', {
+        callback = function()
+          vim.schedule(function()
+            pcall(nvim_bufferline)
+          end)
+        end,
+      })
+    end,
+  },
   -- File explorer
   {
     'nvim-neo-tree/neo-tree.nvim',
