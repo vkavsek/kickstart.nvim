@@ -195,6 +195,7 @@ require('lazy').setup({
         ['<leader>b'] = { name = '[B]uffer', _ = 'which_key_ignore' },
         ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
         ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
+        ['<leader>t'] = { name = '[T]odoComments', _ = 'which_key_ignore' },
         ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
         ['<leader>q'] = { name = '[Q]uit / Session Management', _ = 'which_key_ignore' },
       }
@@ -891,12 +892,13 @@ require('lazy').setup({
   --
   -- require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
+  require 'custom.plugins.luasnip',
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going. For additional information, see `:help lazy.nvim-lazy.nvim-structuring-your-plugins`
   --
-  -- { import = 'custom.plugins' },
+  -- { import = 'custom.plugins.luasnip' },
 }, {
   ui = {
     -- If you have a Nerd Font, set icons to an empty table which will use the
