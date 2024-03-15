@@ -106,9 +106,6 @@ vim.keymap.set('n', '<C-Up>', '<cmd>resize -5<CR>', { desc = 'Resize window up' 
 vim.keymap.set({ 'n', 'v' }, '<Leader>qq', '<cmd>qa<cr>', { desc = '[Q]uit Neovim' })
 vim.keymap.set({ 'n', 'v' }, '<Leader>q!', '<cmd>qa!<cr>', { desc = '[Q]uit Neovim & Discard Unsaved Changes' })
 
--- Buffers
-vim.keymap.set({ 'n' }, '<Leader>bd', '<cmd>bd<cr>', { desc = '[B]uffer [D]elete (Quit)' })
-
 -- Save with Ctrl + S
 vim.keymap.set({ 'n', 'v', 'i' }, '<C-s>', '<cmd>write<cr>', { desc = 'Save currently opened buffer' })
 
@@ -151,7 +148,6 @@ require('lazy').setup({
   -- Use `opts = {}` to force a plugin to be loaded.
   --  This is equivalent to:
   --    require('Comment').setup({})
-
   { 'numToStr/Comment.nvim', opts = {} }, -- "gc" to comment visual regions/lines
 
   -- Here is a more advanced example where we pass configuration
@@ -574,7 +570,32 @@ require('lazy').setup({
         end,
         desc = 'Explorer NeoTree (cwd)',
       },
+      {
+        '<leader>ge',
+        function()
+          require('neo-tree.command').execute { source = 'git_status', toggle = true }
+        end,
+        desc = 'Git explorer',
+      },
+      {
+        '<leader>be',
+        function()
+          require('neo-tree.command').execute { source = 'buffers', toggle = true }
+        end,
+        desc = 'Buffer explorer',
+      },
     },
+    deactivate = function()
+      vim.cmd [[Neotree close]]
+    end,
+    init = function()
+      if vim.fn.argc(-1) == 1 then
+        local stat = vim.loop.fs_stat(vim.fn.argv(0))
+        if stat and stat.type == 'directory' then
+          require 'neo-tree'
+        end
+      end
+    end,
     opts = {
       sources = { 'filesystem', 'buffers', 'git_status', 'document_symbols' },
       open_files_do_not_replace_types = { 'terminal', 'Trouble', 'trouble', 'qf', 'Outline' },
@@ -764,8 +785,20 @@ require('lazy').setup({
     },
   },
   -- Highlight todo, notes, etc in comments
-  { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
+  {
+    'folke/todo-comments.nvim',
+    event = 'VimEnter',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    opts = { signs = false },
+    config = function()
+      require('todo-comments').setup()
+      vim.keymap.set('n', '<Leader>tt', '<cmd>TodoTelescope<cr>', { desc = '[T]odo Comments [T]elescope' })
+      vim.keymap.set('n', '<Leader>tf', '<cmd>TodoTelescope keywords=TODO,FIX,FIXME<cr>', { desc = 'Todo/Fix Telescope' })
+      vim.keymap.set('n', '<Leader>tl', '<cmd>TodoLocList<cr>', { desc = '[T]odo [L]oc List' })
+    end,
+  },
 
+  -- FIXME:
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
     config = function()
@@ -783,6 +816,26 @@ require('lazy').setup({
       -- - sd'   - [S]urround [D]elete [']quotes
       -- - sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
+
+      require('mini.bufremove').setup()
+      -- bufremove keybindings
+      local function normal_del()
+        local bd = require('mini.bufremove').delete
+        if vim.bo.modified then
+          local choice = vim.fn.confirm(('Save changes to %q?'):format(vim.fn.bufname()), '&Yes\n&No\n&Cancel')
+          if choice == 1 then -- Yes
+            vim.cmd.write()
+            bd(0)
+          elseif choice == 2 then -- No
+            bd(0, true)
+          end
+        else
+          bd(0)
+        end
+      end
+      vim.keymap.set('n', '<Leader>bd', normal_del, { desc = '[D]elete [B]uffer' })
+      -- stylua: ignore
+      vim.keymap.set('n', '<Leader>bD', function() require('mini.bufremove').delete(0, true) end, { desc = '[D]elete [B]uffer (Force)' })
 
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
