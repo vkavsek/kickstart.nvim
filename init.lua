@@ -112,14 +112,8 @@ vim.keymap.set({ 'n', 'v' }, '<Leader>qq', '<cmd>qa<cr>', { desc = 'Quit Neovim'
 -- Save with Ctrl + S
 vim.keymap.set({ 'n', 'v', 'i' }, '<C-s>', '<cmd>write<cr>', { desc = 'Save currently opened buffer' })
 
--- Rust Keybinds
-vim.keymap.set('n', '<Leader>cf', [[:!leptosfmt %<CR>]], { desc = '[C]ode [F]ormat: Leptos' })
-vim.keymap.set('n', '<Leader>ct', [[:!cargo test<CR>]], { desc = '[C]argo [T]est' })
-vim.keymap.set('n', '<Leader>cr', [[:!cargo run<CR>]], { desc = '[C]argo [R]un' })
-vim.keymap.set('n', '<Leader>cb', [[:!cargo build<CR>]], { desc = '[C]argo [B]uild' })
-
 -- LazyGit keymaps
-vim.keymap.set('n', '<Leader>gg', [[:LazyGit<CR>]], { desc = 'Start Lazy [G]it' })
+vim.keymap.set('n', '<Leader>gg', '<cmd>LazyGit<CR>', { desc = 'Start Lazy [G]it' })
 
 -- ----------------------------------------------------------------------------------
 -- [[ Basic Autocommands ]]
@@ -405,6 +399,12 @@ require('lazy').setup({
           --  For example, in C this would take you to the header
           map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
 
+          -- Rust Keybinds
+          map('<Leader>cf', '<cmd>leptosfmt %<CR>', '[C]ode [F]ormat: Leptos')
+          map('<Leader>ct', '<cmd>cargo test<CR>', '[C]argo [T]est')
+          map('<Leader>cr', '<cmd>cargo run<CR>', '[C]argo [R]un')
+          map('<Leader>cb', '<cmd>cargo build<CR>', '[C]argo [B]uild')
+
           -- The following two autocommands are used to highlight references of the
           -- word under your cursor when your cursor rests there for a little while.
           --    See `:help CursorHold` for information about when this is executed
@@ -445,7 +445,25 @@ require('lazy').setup({
         -- clangd = {},
         -- gopls = {},
         -- pyright = {},
-        sqls = {},
+        -- sqls = {
+        --   on_attach = function(client, bufnr)
+        --     require('sqls').on_attach(client, bufnr)
+        --   end,
+        -- },
+        lua_ls = {
+          -- cmd = {...},
+          -- filetypes { ...},
+          -- capabilities = {},
+          settings = {
+            Lua = {
+              completion = {
+                callSnippet = 'Replace',
+              },
+              -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
+              -- diagnostics = { disable = { 'missing-fields' } },
+            },
+          },
+        },
         rust_analyzer = {
           settings = {
             ['rust-analyzer'] = {
@@ -483,21 +501,6 @@ require('lazy').setup({
         -- But for many setups, the LSP (`tsserver`) will work just fine
         -- tsserver = {},
         --
-
-        lua_ls = {
-          -- cmd = {...},
-          -- filetypes { ...},
-          -- capabilities = {},
-          settings = {
-            Lua = {
-              completion = {
-                callSnippet = 'Replace',
-              },
-              -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-              -- diagnostics = { disable = { 'missing-fields' } },
-            },
-          },
-        },
       }
 
       -- Ensure the servers and tools above are installed
