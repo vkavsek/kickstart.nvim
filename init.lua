@@ -102,10 +102,6 @@ vim.keymap.set('n', '<C-Left>', '<cmd>vertical resize -5<CR>', { desc = 'Resize 
 vim.keymap.set('n', '<C-Down>', '<cmd>resize +5<CR>', { desc = 'Resize window down' })
 vim.keymap.set('n', '<C-Up>', '<cmd>resize -5<CR>', { desc = 'Resize window up' })
 
--- Exit NVIM
-vim.keymap.set({ 'n', 'v' }, '<Leader>qq', '<cmd>qa<cr>', { desc = '[Q]uit Neovim' })
-vim.keymap.set({ 'n', 'v' }, '<Leader>q!', '<cmd>qa!<cr>', { desc = '[Q]uit Neovim & Discard Unsaved Changes' })
-
 -- Save with Ctrl + S
 vim.keymap.set({ 'n', 'v', 'i' }, '<C-s>', '<cmd>write<cr>', { desc = 'Save currently opened buffer' })
 
@@ -113,6 +109,16 @@ vim.keymap.set({ 'n', 'v', 'i' }, '<C-s>', '<cmd>write<cr>', { desc = 'Save curr
 vim.keymap.set('n', '<Leader>gg', '<cmd>LazyGit<CR>', { desc = 'Start Lazy [G]it' })
 vim.keymap.set('n', '<Leader>gc', '<cmd>LazyGitConfig<CR>', { desc = ' Lazy [G]it [C]onfig' })
 vim.keymap.set('n', '<Leader>gr', '<cmd>LazyGitCurrentFile<CR>', { desc = ' Lazy [G]it Current File [R]oot Dir' })
+
+-- Exit NVIM
+vim.keymap.set({ 'n', 'v' }, '<Leader>qq', '<cmd>qa<cr>', { desc = '[Q]uit Neovim' })
+vim.keymap.set({ 'n', 'v' }, '<Leader>q!', '<cmd>qa!<cr>', { desc = '[Q]uit Neovim & Discard Unsaved Changes' })
+-- Persistence Session Management
+-- stylua: ignore
+vim.keymap.set("n", "<leader>qs", [[<cmd>lua require("persistence").load()<cr>]], { desc = 'Restore Session' })
+-- vim.keymap.set('n', '<Leader>qs', function() require('persistence').load() end, )
+-- { "<leader>ql", function() require("persistence").load({ last = true }) end, desc = "Restore Last Session" },
+-- { "<leader>qd", function() require("persistence").stop() end, desc = "Don't Save Current Session" },
 -- ----------------------------------------------------------------------------------
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -418,6 +424,7 @@ require('lazy').setup({
         --     require('sqls').on_attach(client, bufnr)
         --   end,
         -- },
+        rust_analyzer = {},
         lua_ls = {
           -- cmd = {...},
           -- filetypes { ...},
@@ -431,34 +438,6 @@ require('lazy').setup({
               -- diagnostics = { disable = { 'missing-fields' } },
             },
           },
-        },
-        rust_analyzer = {
-          -- settings = {
-          --   ['rust-analyzer'] = {
-          --     cargo = {
-          --       allFeatures = true,
-          --       loadOutDirsFromCheck = true,
-          --       runBuildScripts = true,
-          --     },
-          --     -- Add clippy lints for Rust.
-          --     checkOnSave = {
-          --       allFeatures = true,
-          --       command = 'clippy',
-          --       extraArgs = { '--no-deps' },
-          --     },
-          --     procMacro = {
-          --       enable = true,
-          --       ignored = {
-          --         ['leptos_macro'] = { --"component",--
-          --           'server',
-          --         },
-          --         ['async-trait'] = { 'async_trait' },
-          --         ['napi-derive'] = { 'napi' },
-          --         ['async-recursion'] = { 'async_recursion' },
-          --       },
-          --     },
-          --   },
-          -- },
         },
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -648,7 +627,7 @@ require('lazy').setup({
     },
   },
   -- Autoclose Braces
-  { 'm4xshen/autoclose.nvim', event = 'InsertEnter', opts = {} },
+  { 'm4xshen/autoclose.nvim', event = 'VimEnter', opts = {} },
   { -- Autocompletion
     'hrsh7th/nvim-cmp',
     event = 'InsertEnter',
@@ -798,8 +777,12 @@ require('lazy').setup({
       vim.keymap.set('n', '<Leader>tl', '<cmd>TodoLocList<cr>', { desc = '[T]odo [L]oc List' })
     end,
   },
-
-  -- FIXME:
+  -- Auto Save Session
+  {
+    'folke/persistence.nvim',
+    event = 'BufReadPre',
+    opts = {},
+  },
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
     config = function()

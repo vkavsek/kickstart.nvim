@@ -8,12 +8,12 @@ return {
 
       -- some shorthands...
       local snip = ls.snippet
-      local node = ls.snippet_node
+      -- local node = ls.snippet_node
       local text = ls.text_node
       local insert = ls.insert_node
-      local func = ls.function_node
-      local choice = ls.choice_node
-      local dynamicn = ls.dynamic_node
+      -- local func = ls.function_node
+      -- local choice = ls.choice_node
+      -- local dynamicn = ls.dynamic_node
 
       ls.config.set_config {
         history = true,
@@ -40,22 +40,50 @@ return {
             text { '}', '', '' },
             text 'impl std::error::Error for Error {}',
           }),
+
           snip({
-            trig = 'ernre',
+            trig = 'erandre',
             namr = 'Result And Error',
             dscr = 'Rust Result & Error Boilerplate',
           }, {
             text { 'pub type Result<T> = core::result::Result<T, Error>;', '', '' },
             text { '#[derive(Debug)]', '' },
             text { 'pub enum Error {', '' },
-            text { '    // TODO', '', '}', '' },
+            text { '\t// TODO', '', '}', '' },
             text { '// Error Boilerplate', '' },
             text { 'impl core::fmt::Display for Error {', '' },
-            text { '    fn fmt(&self, fmt: &mut core::fmt::Formatter) -> core::result::Result<(), core::fmt::Error> {', '' },
-            text { '        write!(fmt, "{self:?}")', '' },
-            text { '    }', '' },
+            text { '\tfn fmt(&self, fmt: &mut core::fmt::Formatter) -> core::result::Result<(), core::fmt::Error> {', '' },
+            text { '\t\twrite!(fmt, "{self:?}")', '' },
+            text { '\t}', '' },
             text { '}', '', '' },
             text 'impl std::error::Error for Error {}',
+          }),
+
+          snip({
+            trig = 'testsmod',
+            namr = 'Tests Module',
+            dscr = 'Create a tests module',
+          }, {
+            text { '#[cfg(test)]', '' },
+            text { 'mod tests {', '' },
+            text { '\tuse super::*;', '' },
+            text { 'use anyhow::Result;', '', '\t' },
+            insert(0),
+            text { '', '}' },
+          }),
+
+          snip({
+            trig = 'testfn',
+            namr = 'Test Function',
+            dscr = 'Create a tests function',
+          }, {
+            text { '#[test]', '' },
+            text { 'fn test_' },
+            insert(1, 'name'),
+            text { '() -> Result<()>{', '\t' },
+            insert(0),
+            text { '', '\tOk(())', '' },
+            text { '}' },
           }),
         },
       })
