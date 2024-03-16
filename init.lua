@@ -783,6 +783,17 @@ require('lazy').setup({
     event = 'BufReadPre',
     opts = {},
   },
+  -- Search/Replace in multiple files
+  {
+    'nvim-pack/nvim-spectre',
+    cmd = 'Spectre',
+    event = 'VimEnter',
+    opts = { open_cmd = 'noswapfile vnew' },
+    config = function()
+      -- stylua: ignore
+      vim.keymap.set('n', '<leader>sR',  [[<cmd>lua require('spectre').open()<cr>]], { desc = '[S]earch & [R]eplace (Spectre)' })
+    end,
+  },
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
     config = function()
