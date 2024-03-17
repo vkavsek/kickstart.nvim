@@ -73,9 +73,23 @@ return {
           }),
 
           snip({
+            trig = 'tokiotest',
+            namr = 'Tokio Test Function',
+            dscr = 'Create a tokio test function',
+          }, {
+            text { '#[tokio::test]', '' },
+            text { 'fn test_' },
+            insert(1, 'name'),
+            text { '() -> Result<()>{', '\t' },
+            insert(0),
+            text { '', '\tOk(())', '' },
+            text { '}' },
+          }),
+
+          snip({
             trig = 'testfn',
             namr = 'Test Function',
-            dscr = 'Create a tests function',
+            dscr = 'Create a test function',
           }, {
             text { '#[test]', '' },
             text { 'fn test_' },
