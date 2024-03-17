@@ -310,6 +310,7 @@ require('lazy').setup({
       'williamboman/mason.nvim',
       'williamboman/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
+      'nanotee/sqls.nvim',
 
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
@@ -378,6 +379,13 @@ require('lazy').setup({
           map('<Leader>ct', ':!cargo test<CR>', '[C]argo [T]est')
           map('<Leader>cr', ':!cargo run<CR>', '[C]argo [R]un')
           map('<Leader>cb', ':!cargo build<CR>', '[C]argo [B]uild')
+          map('K', function()
+            if vim.fn.expand '%:t' == 'Cargo.toml' and require('crates').popup_available() then
+              require('crates').show_popup()
+            else
+              vim.lsp.buf.hover()
+            end
+          end, 'Show Crate Documentation')
 
           -- The following two autocommands are used to highlight references of the
           -- word under your cursor when your cursor rests there for a little while.
@@ -419,16 +427,19 @@ require('lazy').setup({
         -- clangd = {},
         -- gopls = {},
         -- pyright = {},
-        -- sqls = {
-        --   on_attach = function(client, bufnr)
-        --     require('sqls').on_attach(client, bufnr)
-        --   end,
-        -- },
+        sqls = {
+          on_attach = function(client, bufnr)
+            require('sqls').on_attach(client, bufnr)
+          end,
+          settings = {
+            sqls = {
+              connections = {},
+            },
+          },
+        },
         rust_analyzer = {},
+        taplo = {},
         lua_ls = {
-          -- cmd = {...},
-          -- filetypes { ...},
-          -- capabilities = {},
           settings = {
             Lua = {
               completion = {
@@ -440,19 +451,9 @@ require('lazy').setup({
           },
         },
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
-        --
-        -- Some languages (like typescript) have entire language plugins that can be useful:
-        --    https://github.com/pmizio/typescript-tools.nvim
-        --
-        -- But for many setups, the LSP (`tsserver`) will work just fine
-        -- tsserver = {},
-        --
       }
 
       -- Ensure the servers and tools above are installed
-      --  To check the current status of installed tools and/or manually install
-      --  other tools, you can run
-      --    :Mason
       require('mason').setup()
 
       -- You can add other tools here that you want Mason to install
@@ -476,6 +477,48 @@ require('lazy').setup({
           end,
         },
       }
+    end,
+  },
+  {
+    'mrcjkb/rustaceanvim',
+    version = '^4', -- Recommended
+    ft = { 'rust' },
+    opts = {
+      server = {
+        on_attach = function(_, bufnr)
+          vim.keymap.set('n', '<leader>cg', function()
+            vim.cmd.RustLsp 'debuggables'
+          end, { desc = 'Rust Debuggables', buffer = bufnr })
+        end,
+        default_settings = {
+          -- rust-analyzer language server configuration
+          ['rust-analyzer'] = {
+            cargo = {
+              allFeatures = true,
+              loadOutDirsFromCheck = true,
+              runBuildScripts = true,
+            },
+            -- Add clippy lints for Rust.
+            checkOnSave = {
+              allFeatures = true,
+              command = 'clippy',
+              extraArgs = { '--no-deps' },
+            },
+            procMacro = {
+              enable = true,
+              ignored = {
+                ['leptos_macro'] = { 'server' },
+                ['async-trait'] = { 'async_trait' },
+                ['napi-derive'] = { 'napi' },
+                ['async-recursion'] = { 'async_recursion' },
+              },
+            },
+          },
+        },
+      },
+    },
+    config = function(_, opts)
+      vim.g.rustaceanvim = vim.tbl_deep_extend('keep', vim.g.rustaceanvim or {}, opts or {})
     end,
   },
   -- Buffers into tabs
@@ -623,6 +666,28 @@ require('lazy').setup({
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.
         -- javascript = { { "prettierd", "prettier" } },
+      },
+    },
+  },
+  -- Better movement
+  {
+    'chrisgrieser/nvim-spider',
+    lazy = true,
+    keys = {
+      {
+        'e',
+        "<cmd>lua require('spider').motion('e')<CR>",
+        mode = { 'n', 'o', 'x' },
+      },
+      {
+        'b',
+        "<cmd>lua require('spider').motion('b')<CR>",
+        mode = { 'n', 'o', 'x' },
+      },
+      {
+        'w',
+        "<cmd>lua require('spider').motion('w')<CR>",
+        mode = { 'n', 'o', 'x' },
       },
     },
   },
