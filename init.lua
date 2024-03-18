@@ -133,6 +133,20 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+vim.api.nvim_create_autocmd('LspAttach', {
+  group = vim.api.nvim_create_augroup('UserLspConfig', {}),
+  callback = function(ev)
+    local bufnr = ev.buf
+    local client = vim.lsp.get_client_by_id(ev.data.client_id)
+    if client.server_capabilities.inlayHintProvider then
+      -- stylua: ignore
+      vim.keymap.set('n', '<leader>ch',
+        '<cmd>lua vim.lsp.inlay_hint.enable(bufnr, not vim.lsp.inlay_hint.is_enabled(bufnr))<cr>'
+      , { desc = '[LSP] [C]ode [H]ints' })
+    end
+  end,
+})
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -437,7 +451,6 @@ require('lazy').setup({
             },
           },
         },
-        rust_analyzer = {},
         taplo = {},
         lua_ls = {
           settings = {
@@ -497,6 +510,9 @@ require('lazy').setup({
               allFeatures = true,
               loadOutDirsFromCheck = true,
               runBuildScripts = true,
+            },
+            inlayHints = {
+              enable = true,
             },
             -- Add clippy lints for Rust.
             checkOnSave = {
