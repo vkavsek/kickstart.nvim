@@ -78,6 +78,9 @@ vim.opt.scrolloff = 5
 vim.opt.hlsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
+vim.keymap.set({ 'n', 'v', 'i' }, '<M-j>', '<cmd>m .+1<cr>', { desc = 'Move a line down.' })
+vim.keymap.set({ 'n', 'v', 'i' }, '<M-k>', '<cmd>m .-2<cr>', { desc = 'Move a line up.' })
+
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
@@ -324,7 +327,7 @@ require('lazy').setup({
       'williamboman/mason.nvim',
       'williamboman/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
-      'nanotee/sqls.nvim',
+      -- 'nanotee/sqls.nvim',
 
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
@@ -441,16 +444,16 @@ require('lazy').setup({
         -- clangd = {},
         -- gopls = {},
         -- pyright = {},
-        sqls = {
-          on_attach = function(client, bufnr)
-            require('sqls').on_attach(client, bufnr)
-          end,
-          settings = {
-            sqls = {
-              connections = {},
-            },
-          },
-        },
+        -- sqls = {
+        --   on_attach = function(client, bufnr)
+        --     require('sqls').on_attach(client, bufnr)
+        --   end,
+        --   settings = {
+        --     sqls = {
+        --       connections = {},
+        --     },
+        --   },
+        -- },
         taplo = {},
         lua_ls = {
           settings = {
@@ -976,6 +979,11 @@ require('lazy').setup({
   -- { import = 'custom.plugins.luasnip' },
 }, {
   ui = {
+    change_detection = {
+      -- automatically check for config file changes and reload the ui
+      enabled = true,
+      notify = true, -- get a notification when changes are found
+    },
     -- If you have a Nerd Font, set icons to an empty table which will use the
     -- default lazy.nvim defined Nerd Font icons otherwise define a unicode icons table
     icons = vim.g.have_nerd_font and {} or {
