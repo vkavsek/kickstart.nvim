@@ -25,13 +25,25 @@ return {
       ls.add_snippets(nil, {
         rust = {
           snip({
+            trig = 'title',
+            namr = 'Comment Title',
+            dscr = 'Rust Comment Title',
+          }, {
+            text { '// ###################################', '' },
+            text { '// -> \t' },
+            insert(0, 'TITLE'),
+            text { '', '// ###################################' },
+          }),
+
+          snip({
             trig = 'rrr',
             namr = '[R]ust E[RR]or',
             dscr = 'Rust Error Boilerplate',
           }, {
             text { '#[derive(Debug)]', '' },
             text { 'pub enum Error {', '' },
-            text { '\t// TODO', '', '}', '' },
+            insert(0, '\t// TODO: '),
+            text { '', '}', '' },
             text { '// Error Boilerplate', '' },
             text { 'impl core::fmt::Display for Error {', '' },
             text { '\tfn fmt(&self, fmt: &mut core::fmt::Formatter) -> core::result::Result<(), core::fmt::Error> {', '' },
@@ -49,7 +61,8 @@ return {
             text { 'pub type Result<T> = core::result::Result<T, Error>;', '', '' },
             text { '#[derive(Debug)]', '' },
             text { 'pub enum Error {', '' },
-            text { '\t// TODO', '', '}', '' },
+            insert(0, '\t// TODO: '),
+            text { '', '}', '' },
             text { '// Error Boilerplate', '' },
             text { 'impl core::fmt::Display for Error {', '' },
             text { '\tfn fmt(&self, fmt: &mut core::fmt::Formatter) -> core::result::Result<(), core::fmt::Error> {', '' },
