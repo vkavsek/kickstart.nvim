@@ -454,6 +454,8 @@ require('lazy').setup({
         --     },
         --   },
         -- },
+
+        zls = {},
         taplo = {},
         lua_ls = {
           settings = {
@@ -509,6 +511,10 @@ require('lazy').setup({
         default_settings = {
           -- rust-analyzer language server configuration
           ['rust-analyzer'] = {
+            -- Disables greyed out code with cfg directives.
+            diagnostics = {
+              disabled = { 'inactive-code' },
+            },
             cargo = {
               allFeatures = true,
               loadOutDirsFromCheck = true,
