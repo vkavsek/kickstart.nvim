@@ -144,7 +144,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
     if client.server_capabilities.inlayHintProvider then
       -- stylua: ignore
       vim.keymap.set('n', '<leader>ch',
-        '<cmd>lua vim.lsp.inlay_hint.enable(bufnr, not vim.lsp.inlay_hint.is_enabled(bufnr))<cr>'
+        string.format( '<cmd>lua vim.lsp.inlay_hint.enable(%d, not vim.lsp.inlay_hint.is_enabled(%d))<cr>', bufnr, bufnr)
       , { desc = '[LSP] [C]ode [H]ints' })
     end
   end,

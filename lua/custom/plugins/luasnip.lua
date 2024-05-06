@@ -86,6 +86,17 @@ return {
           }),
 
           snip({
+            trig = 'tokiomain',
+            namr = 'Tokio Main Function',
+            dscr = 'Create Tokio main function.',
+          }, {
+            text { '#[tokio::main]', '' },
+            text { 'async fn main() {', '\t' },
+            insert(0, '//TODO:'),
+            text { '', '}' },
+          }),
+
+          snip({
             trig = 'tokiotest',
             namr = 'Tokio Test Function',
             dscr = 'Create a tokio test function',
