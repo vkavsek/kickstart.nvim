@@ -102,7 +102,7 @@ return {
             dscr = 'Create a tokio test function',
           }, {
             text { '#[tokio::test]', '' },
-            text { 'fn test_' },
+            text { 'async fn test_' },
             insert(1, 'name'),
             text { '() -> Result<()>{', '\t' },
             insert(0),
