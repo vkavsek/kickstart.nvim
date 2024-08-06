@@ -3,8 +3,8 @@ return {
     'L3MON4D3/LuaSnip',
     config = function()
       local ls = require 'luasnip'
-      local fmt = require('luasnip.extras.fmt').fmt
-      local rep = require('luasnip.extras').rep
+      -- local fmt = require('luasnip.extras.fmt').fmt
+      -- local rep = require('luasnip.extras').rep
 
       -- some shorthands...
       local snip = ls.snippet
@@ -102,7 +102,7 @@ return {
             dscr = 'Create a tokio test function',
           }, {
             text { '#[tokio::test]', '' },
-            text { 'async fn test_' },
+            text { 'async fn ' },
             insert(1, 'name'),
             text { '() -> Result<()>{', '\t' },
             insert(0),
@@ -116,7 +116,7 @@ return {
             dscr = 'Create a test function',
           }, {
             text { '#[test]', '' },
-            text { 'fn test_' },
+            text { 'fn ' },
             insert(1, 'name'),
             text { '() -> Result<()>{', '\t' },
             insert(0),

@@ -196,28 +196,21 @@ require('lazy').setup({
   -- For example, in the following configuration, we use:
   --  event = 'VimEnter' - which loads which-key before all the UI elements are loaded.
   --  Events can be normal autocommands events (`:help autocmd-events`).
-  --
-  -- Then, because we use the `config` key, the configuration only runs
-  -- after the plugin has been loaded:
-  --  config = function() ... end
 
   { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
-    config = function() -- This is the function that runs, AFTER loading
-      require('which-key').setup()
-
-      -- Document existing key chains
-      require('which-key').register {
-        ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-        ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-        ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
-        ['<leader>b'] = { name = '[B]uffer', _ = 'which_key_ignore' },
-        ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-        ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-        ['<leader>t'] = { name = '[T]odoComments', _ = 'which_key_ignore' },
-        ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
-        ['<leader>q'] = { name = '[Q]uit / Session Management', _ = 'which_key_ignore' },
+    config = function()
+      require('which-key').add {
+        { '<leader>c', group = '[C]ode' },
+        { '<leader>d', group = '[D]ocument' },
+        { '<leader>g', group = '[G]it' },
+        { '<leader>b', group = '[B]uffer' },
+        { '<leader>r', group = '[R]ename' },
+        { '<leader>s', group = '[S]earch' },
+        { '<leader>t', group = '[T]odoComments' },
+        { '<leader>w', group = '[W]orkspace' },
+        { '<leader>q', group = '[Q]uit / Session Management' },
       }
     end,
   },
@@ -436,7 +429,7 @@ require('lazy').setup({
           -- This may be unwanted, since they displace some of your code
           if client and client.server_capabilities.inlayHintProvider and vim.lsp.inlay_hint then
             map('<leader>ch', function()
-              vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+              vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { nil })
             end, 'Toggle Inlay [H]ints')
           end
         end,
@@ -475,6 +468,7 @@ require('lazy').setup({
 
         zls = {},
         taplo = {},
+        marksman = {},
         lua_ls = {
           settings = {
             Lua = {
@@ -498,6 +492,8 @@ require('lazy').setup({
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format lua code
         'codelldb',
+        'markdownlint',
+        'marksman',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -677,7 +673,7 @@ require('lazy').setup({
             function(state)
               local node = state.tree:get_node()
               local path = node:get_id()
-              vim.fn.setreg('+', path, { 'c' })
+              vim.fn.setreg('+', path, 'c')
             end,
             desc = 'copy path to clipboard',
           },
@@ -788,7 +784,7 @@ require('lazy').setup({
         'Saecki/crates.nvim',
         event = { 'BufRead Cargo.toml' },
         opts = {
-          src = {
+          completion = {
             cmp = { enabled = true },
           },
         },
@@ -981,7 +977,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'html', 'lua', 'markdown', 'vim', 'vimdoc', 'rust', 'ron', 'toml', 'sql' },
+      ensure_installed = { 'bash', 'c', 'html', 'lua', 'markdown', 'vim', 'vimdoc', 'rust', 'ron', 'toml', 'sql', 'markdown', 'markdown_inline' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = { enable = true, additional_vim_regex_highlighting = { 'ruby' } },
@@ -1013,11 +1009,10 @@ require('lazy').setup({
   --
   -- require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
-  require 'custom.plugins.luasnip',
-
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
-  --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going. For additional information, see `:help lazy.nvim-lazy.nvim-structuring-your-plugins`
+  require 'custom.plugins.luasnip',
+  require 'custom.plugins.luarocks',
 }, {
   ui = {
     change_detection = {
